@@ -17,3 +17,6 @@ Cache clear is a plugin written for Craft that allows you to post to a specific 
 Before I say anything else, this plugin is inspired by [Ben Croker's](http://www.putyourlightson.net) plugin [Dump](https://github.com/putyourlightson/Craft-Dump). To clarify what I mean by "inspired" - it is an almost exact copy.. I just spent my time determining how to create an action that would clear the caches.
 
 However, I **did** check with Ben before releasing this to make sure it was ok... In other words - love your fellow developers and show respect where its due!
+
+
+Icon by Arthur Shlain [via the Noun Project]](https://thenounproject.com/search/?q=eraser&i=53026)
