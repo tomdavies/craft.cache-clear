@@ -1,18 +1,22 @@
 {% import "_includes/forms" as forms %}
 
+{% set settingsKey = craft.cacheClear.getKey() %}
+{% set key = settingsKey ?? settings.key ?? '1234567890' %}
+
+{% set instructions = settingsKey ? "Key is being set in config file to "~key | t  : "The key that will verify calls to the plugin. This must be set for calls to work."|t  %}
 
 {{ forms.textField({
 label: "Key"|t,
 id: 'key',
 name: 'key',
-instructions: "The key that will verify calls to the plugin. This must be set for calls to work."|t,
+instructions: instructions,
 value: settings.key,
 autofocus: true,
-errors: settings.getErrors('key')
+disabled: settingsKey,
+errors: settings.getErrors('key'),
 }) }}
 
 
-{% set key = settings.key ? settings.key : '1234567890' %}
 
 <hr>
 
@@ -27,3 +31,11 @@ errors: settings.getErrors('key')
 <h3>URL</h3>
 
 <code>{{ siteUrl(craft.config.get('actionTrigger') ~ '/cacheClear/clear', { key: key }) }}</code>
+
+<p>Clear a named cache by passing a <code>handles[]</code> array in the URL (PHP encoded)</p>
+
+<code>{{ siteUrl(craft.config.get('actionTrigger') ~ '/cacheClear/clearByHandles', { key: key }) ~ '&handles[]=dataCache&handles[]=compiledTemplates' }}</code>
+
+<p>Or clear all caches except those passed using the <code>clearExceptHandles</code> action</p>
+
+<code>{{ siteUrl(craft.config.get('actionTrigger') ~ '/cacheClear/clearExceptHandles', { key: key}) ~ '&handles[]=dataCache&handles[]=compiledTemplates' }}</code>

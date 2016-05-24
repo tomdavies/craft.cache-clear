@@ -7,31 +7,91 @@ class CacheClearController extends BaseController {
 	 *
 	 * @var array
 	 */
-	protected $allowAnonymous = array('actionClear');
+	protected $allowAnonymous = array('actionClear', 'actionClearByHandles', 'actionClearExceptHandles');
 
 	/**
 	 * Handle the action to clear the cache.
 	 */
 	public function actionClear()
 	{
-		if (!$plugin = craft()->plugins->getPlugin('cacheClear')) {
-			die('Could not find the plugin');
+
+		$this->_beforeClear();
+
+		craft()->cacheClear->clearCaches('*');
+
+		$this->_afterClear();
+	}
+
+	public function actionClearByHandles()
+	{
+		$this->_beforeClear();
+
+		$handles = $this->_getCacheHandles();
+
+		$result = craft()->cacheClear->clear($handles);
+
+		$this->_afterClear($result);
+	}
+
+	public function actionClearExceptHandles()
+	{
+		$this->_beforeClear();
+
+		$handles = $this->_getCacheHandles();
+
+		$result = craft()->cacheClear->clearExcept($handles);
+
+		$this->_afterClear($result);
+	}
+
+
+	private function _beforeClear()
+	{
+		if (!$plugin = craft()->plugins->getPlugin('cacheClear'))
+		{
+			$this->returnErrorJson("Could not find the plugin");
 		}
 
 		$settings = $plugin->getSettings();
 
-		$key = craft()->request->getParam('key');
+		$requestKey = craft()->request->getParam('key');
 
-		if (!$settings->key OR $key != $settings->key) {
-			die('Unauthorized key');
+		$storedKey = craft()->config->get('key', 'cacheclear');
+
+		if(!$storedKey)
+		{
+			$storedKey = $settings->key;
 		}
 
-		craft()->templateCache->deleteAllCaches();
 
-		if (craft()->request->getPost('redirect')) {
+		if (!$storedKey OR $requestKey != $storedKey)
+		{
+			$this->returnErrorJson("Unauthorized key");
+		}
+	}
+
+	private function _afterClear($result)
+	{
+		if (craft()->request->getPost('redirect'))
+		{
 			$this->redirectToPostedUrl();
 		}
 
-		die('Your cache cleared successfully!');
+		if($result['error'])
+		{
+			$this->returnJson($result['error']);
+		}
+
+		$this->returnJson("Cache cleared successfully");
+	}
+
+	private function _getCacheHandles()
+	{
+		if (!$handles = craft()->request->getParam('handles'))
+		{
+			$this->returnErrorJson("Required parameter `handles` missing");
+		}
+
+		return $handles;
 	}
 }
